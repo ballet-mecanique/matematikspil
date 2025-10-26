@@ -109,19 +109,26 @@
         </template>
         </div>
 
-        <!-- Test buttons for confetti and fireworks -->
-        <div class="flex justify-center gap-4 mt-4">
+        <!-- Test buttons for confetti, fireworks, and auto-play -->
+        <div class="flex justify-center gap-3 mt-4 flex-wrap">
           <button
             @click="triggerConfetti"
-            class="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+            class="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-3 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-xs sm:text-sm"
           >
             🎊 Test Confetti
           </button>
           <button
             @click="triggerFireworks"
-            class="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+            class="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white px-3 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-xs sm:text-sm"
           >
             🎆 Test Fireworks
+          </button>
+          <button
+            @click="isAutoPlaying ? stopAutoPlay() : startAutoPlay()"
+            class="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white px-3 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-xs sm:text-sm"
+            :class="{ 'from-red-400 to-red-500 hover:from-red-500 hover:to-red-600': isAutoPlaying }"
+          >
+            {{ isAutoPlaying ? '⏹️ Stop Auto' : '🤖 Auto Play' }}
           </button>
         </div>
       </div>
@@ -239,6 +246,9 @@ const resetGame = () => {
   newRecord.value = ''
   currentInput.value = ''
 
+  // Stop auto-play if running
+  stopAutoPlay()
+
   if (gameTimer.value) {
     clearInterval(gameTimer.value)
     gameTimer.value = null
@@ -283,6 +293,10 @@ const isFlashing = ref(false)
 const isShaking = ref(false)
 const questionFlashCorrect = ref(false)
 const questionFlashWrong = ref(false)
+
+// Auto-play state
+const isAutoPlaying = ref(false)
+const autoPlayInterval = ref<number | null>(null)
 
 // Answer handling
 const handleAnswer = (answer: number) => {
@@ -447,6 +461,52 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
+// Auto-play game functions
+const startAutoPlay = () => {
+  if (!gameStarted.value) {
+    startGame()
+  }
+
+  isAutoPlaying.value = true
+
+  const playNextAnswer = () => {
+    if (!gameStarted.value || gameCompleted.value || !isAutoPlaying.value) {
+      stopAutoPlay()
+      return
+    }
+
+    // Get current question and calculate correct answer
+    const question = currentQuestion.value
+    const correctAnswer = question.a * question.b
+
+    // Simulate typing the answer
+    currentInput.value = correctAnswer.toString()
+
+    // Submit the answer after a short delay
+    setTimeout(() => {
+      if (isAutoPlaying.value) {
+        handleAnswer(correctAnswer)
+
+        // Schedule next answer if game is still going
+        if (!gameCompleted.value && isAutoPlaying.value) {
+          autoPlayInterval.value = setTimeout(playNextAnswer, 800) // Wait for animations
+        }
+      }
+    }, 300) // Short delay to show the typed answer
+  }
+
+  // Start the auto-play sequence
+  playNextAnswer()
+}
+
+const stopAutoPlay = () => {
+  isAutoPlaying.value = false
+  if (autoPlayInterval.value) {
+    clearTimeout(autoPlayInterval.value)
+    autoPlayInterval.value = null
+  }
+}
+
 // Confetti and Fireworks functions
 const triggerConfetti = () => {
   confetti({
@@ -508,6 +568,7 @@ onUnmounted(() => {
   if (gameTimer.value) {
     clearInterval(gameTimer.value)
   }
+  stopAutoPlay()
   document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
