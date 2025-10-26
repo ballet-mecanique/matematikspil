@@ -108,6 +108,22 @@
           </div>
         </template>
         </div>
+
+        <!-- Test buttons for confetti and fireworks -->
+        <div class="flex justify-center gap-4 mt-4">
+          <button
+            @click="triggerConfetti"
+            class="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+          >
+            🎊 Test Confetti
+          </button>
+          <button
+            @click="triggerFireworks"
+            class="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+          >
+            🎆 Test Fireworks
+          </button>
+        </div>
       </div>
     </div>
 
@@ -142,6 +158,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import confetti from 'canvas-confetti'
 
 // Game state
 const gameStarted = ref(false)
@@ -332,6 +349,11 @@ const completeGame = () => {
 
   // Save statistics and check for records
   saveGameStats()
+
+  // Always trigger confetti when game is completed
+  setTimeout(() => {
+    triggerConfetti()
+  }, 500)
 }
 
 // Statistics management
@@ -354,14 +376,26 @@ const saveGameStats = () => {
   // Check for records
   if (stats.value.length === 1) {
     newRecord.value = 'Første resultat!'
+    // Trigger fireworks for first result
+    setTimeout(() => {
+      triggerFireworks()
+    }, 1000)
   } else {
     const bestTime = Math.min(...stats.value.slice(0, -1).map(s => s.time))
     const bestMistakes = Math.min(...stats.value.slice(0, -1).map(s => s.mistakes))
 
     if (finalMistakes.value < bestMistakes) {
       newRecord.value = 'Ny rekord i færrest fejl!'
+      // Trigger fireworks for new record
+      setTimeout(() => {
+        triggerFireworks()
+      }, 1000)
     } else if (finalMistakes.value === bestMistakes && finalTime.value < bestTime) {
       newRecord.value = 'Ny rekord i tid!'
+      // Trigger fireworks for new record
+      setTimeout(() => {
+        triggerFireworks()
+      }, 1000)
     }
   }
 
@@ -411,6 +445,50 @@ const handleKeyDown = (event: KeyboardEvent) => {
     event.preventDefault() // Prevent browser back navigation
     currentInput.value = currentInput.value.slice(0, -1)
   }
+}
+
+// Confetti and Fireworks functions
+const triggerConfetti = () => {
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff']
+  })
+}
+
+const triggerFireworks = () => {
+  const duration = 3000
+  const animationEnd = Date.now() + duration
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min
+  }
+
+  const interval = setInterval(function() {
+    const timeLeft = animationEnd - Date.now()
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval)
+    }
+
+    const particleCount = 50 * (timeLeft / duration)
+
+    // Launch fireworks from different positions
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      colors: ['#ff6b6b', '#feca57', '#ff9ff3']
+    })
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      colors: ['#4ecdc4', '#45b7d1', '#54a0ff']
+    })
+  }, 250)
 }
 
 // Utility functions
