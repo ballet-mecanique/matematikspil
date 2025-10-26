@@ -109,8 +109,8 @@
         </template>
         </div>
 
-        <!-- Test buttons for confetti, fireworks, and auto-play -->
-        <div class="flex justify-center gap-3 mt-4 flex-wrap">
+        <!-- Test buttons for confetti, fireworks, and auto-play (only in test mode) -->
+        <div v-if="isTestMode" class="flex justify-center gap-3 mt-4 flex-wrap">
           <button
             @click="triggerConfetti"
             class="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-3 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-xs sm:text-sm"
@@ -297,6 +297,15 @@ const questionFlashWrong = ref(false)
 // Auto-play state
 const isAutoPlaying = ref(false)
 const autoPlayInterval = ref<number | null>(null)
+
+// Check for test mode
+const isTestMode = computed(() => {
+  if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get('test') === 'true'
+  }
+  return false
+})
 
 // Answer handling
 const handleAnswer = (answer: number) => {
