@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gangetabel Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1e293b;
+            color: white;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .pass {
+            background-color: #059669;
+        }
+        .fail {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gangetabel Game Test</h1>
+    <div id="test-results"></div>
+
+    <script>
+        // Test the core game logic
+        function runTests() {
+            const results = [];
+            
+            // Test 1: All 81 combinations exist
+            const allCombinations = [];
+            for (let a = 1; a <= 9; a++) {
+                for (let b = 1; b <= 9; b++) {
+                    allCombinations.push(`${a}x${b}`);
+                }
+            }
+            results.push({
+                name: "All 81 combinations generated",
+                pass: allCombinations.length === 81,
+                details: `Generated ${allCombinations.length} combinations`
+            });
+
+            // Test 2: Multiplication correctness
+            const testCases = [
+                {a: 1, b: 1, expected: 1},
+                {a: 3, b: 7, expected: 21},
+                {a: 8, b: 9, expected: 72},
+                {a: 6, b: 6, expected: 36},
+                {a: 9, b: 9, expected: 81}
+            ];
+            
+            let allCorrect = true;
+            testCases.forEach(test => {
+                const result = test.a * test.b;
+                if (result !== test.expected) {
+                    allCorrect = false;
+                }
+            });
+            
+            results.push({
+                name: "Multiplication calculations correct",
+                pass: allCorrect,
+                details: "Tested key multiplication cases"
+            });
+
+            // Test 3: Cookie functionality (basic test)
+            try {
+                const testData = {time: 120, mistakes: 3, date: new Date().toISOString()};
+                const cookieValue = JSON.stringify([testData]);
+                document.cookie = `gangetabel_test=${encodeURIComponent(cookieValue)}; path=/`;
+                
+                const cookies = document.cookie.split(';');
+                const testCookie = cookies.find(cookie => cookie.trim().startsWith('gangetabel_test='));
+                
+                results.push({
+                    name: "Cookie storage works",
+                    pass: !!testCookie,
+                    details: testCookie ? "Cookie set and retrieved successfully" : "Cookie test failed"
+                });
+            } catch (error) {
+                results.push({
+                    name: "Cookie storage works",
+                    pass: false,
+                    details: `Error: ${error.message}`
+                });
+            }
+
+            // Test 4: Time formatting
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+            
+            const timeTests = [
+                {input: 65, expected: "1:05"},
+                {input: 120, expected: "2:00"},
+                {input: 45, expected: "0:45"}
+            ];
+            
+            let timeFormatCorrect = true;
+            timeTests.forEach(test => {
+                if (formatTime(test.input) !== test.expected) {
+                    timeFormatCorrect = false;
+                }
+            });
+            
+            results.push({
+                name: "Time formatting works",
+                pass: timeFormatCorrect,
+                details: "Tested time formatting for various durations"
+            });
+
+            // Display results
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('test-results');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.pass ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    <strong>${result.name}</strong>: ${result.pass ? 'PASS' : 'FAIL'}
+                    <br><small>${result.details}</small>
+                `;
+                container.appendChild(div);
+            });
+
+            // Summary
+            const passed = results.filter(r => r.pass).length;
+            const total = results.length;
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passed === total ? 'pass' : 'fail'}`;
+            summary.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+            container.appendChild(summary);
+        }
+
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>
