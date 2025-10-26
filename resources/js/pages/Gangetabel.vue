@@ -1,22 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 text-gray-800 p-4">
-    <!-- Header with timer and stats -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-center flex-1 text-purple-700">🌟 Gangetabel 🌟</h1>
-      <div class="flex gap-4 text-lg">
-        <div class="bg-yellow-200 text-orange-700 px-3 py-1 rounded-lg border-2 border-yellow-300 font-semibold">
-          ⏰ Tid: {{ formatTime(gameTime) }}
-        </div>
-        <div class="bg-pink-200 text-pink-700 px-3 py-1 rounded-lg border-2 border-pink-300 font-semibold">
-          ❌ Fejl: {{ mistakes }}
-        </div>
-      </div>
-      <button
-        @click="showStats = true"
-        class="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg"
-      >
-        📊 Stats
-      </button>
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-purple-700">🌟 Gangetabel 🌟</h1>
     </div>
 
     <!-- Game State Display -->
@@ -24,10 +10,18 @@
       <p class="text-xl mb-4 text-purple-600">🎯 Klar til at øve gangetabellen? 🎯</p>
       <button
         @click="startGame"
-        class="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white px-8 py-3 rounded-lg text-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+        class="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white px-8 py-3 rounded-lg text-xl font-bold transition-all transform hover:scale-105 shadow-lg mb-4"
       >
         🚀 Start Spil
       </button>
+      <div>
+        <button
+          @click="showStats = true"
+          class="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg"
+        >
+          📊 Resultat
+        </button>
+      </div>
     </div>
 
     <div v-else-if="gameCompleted" class="text-center mb-8">
@@ -61,7 +55,27 @@
 
     <!-- Multiplication Table Grid -->
     <div class="flex justify-center">
-      <div class="grid grid-cols-10 gap-2 bg-white p-6 rounded-xl shadow-2xl border-4 border-purple-200">
+      <div class="relative">
+        <!-- Stats bar positioned above the table -->
+        <div v-if="gameStarted && !gameCompleted" class="flex justify-between items-center mb-4 px-2" style="width: 100%;">
+          <div class="bg-green-200 text-green-700 px-3 py-1 rounded-lg border-2 border-green-300 font-semibold text-sm">
+            ✅ {{ answeredCount }}/81
+          </div>
+          <div class="bg-yellow-200 text-orange-700 px-3 py-1 rounded-lg border-2 border-yellow-300 font-semibold text-sm">
+            ⏰ Tid: {{ formatTime(gameTime) }}
+          </div>
+          <div class="bg-pink-200 text-pink-700 px-3 py-1 rounded-lg border-2 border-pink-300 font-semibold text-sm">
+            ❌ Fejl: {{ mistakes }}
+          </div>
+          <button
+            @click="showStats = true"
+            class="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-3 py-1 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+          >
+            📊 Resultat
+          </button>
+        </div>
+
+        <div class="grid grid-cols-10 gap-2 bg-white p-6 rounded-xl shadow-2xl border-4 border-purple-200">
         <!-- Header row -->
         <div class="w-12 h-12"></div>
         <div
@@ -93,6 +107,7 @@
             {{ getCellValue(row, col) }}
           </div>
         </template>
+        </div>
       </div>
     </div>
 
@@ -150,6 +165,11 @@ const currentQuestion = computed(() => {
     return { a: 1, b: 1 }
   }
   return questions.value[currentQuestionIndex.value]
+})
+
+// Count of answered questions
+const answeredCount = computed(() => {
+  return questions.value.filter(q => q.answered).length
 })
 
 // Statistics
@@ -265,13 +285,27 @@ const handleAnswer = (answer: number) => {
       questionFlashCorrect.value = false
       isFlashing.value = false
       currentInput.value = ''
-      currentQuestionIndex.value++
 
-      // Check if game is completed
-      if (currentQuestionIndex.value >= questions.value.length) {
+      // Check if game is completed - all questions must be answered
+      const allAnswered = questions.value.every(q => q.answered)
+      if (allAnswered) {
         completeGame()
+      } else {
+        // Find next unanswered question
+        const nextIndex = questions.value.findIndex((q, index) =>
+          index > currentQuestionIndex.value && !q.answered
+        )
+        if (nextIndex !== -1) {
+          currentQuestionIndex.value = nextIndex
+        } else {
+          // If no questions after current index, find first unanswered from beginning
+          const firstUnanswered = questions.value.findIndex(q => !q.answered)
+          if (firstUnanswered !== -1) {
+            currentQuestionIndex.value = firstUnanswered
+          }
+        }
       }
-    }, 800)
+    }, 400)
   } else {
     // Wrong answer - flash question red
     mistakes.value++
@@ -448,7 +482,7 @@ onUnmounted(() => {
 }
 
 .flash-correct-question {
-  animation: flash-correct-question 0.8s ease-in-out;
+  animation: flash-correct-question 0.4s ease-in-out;
 }
 
 .flash-wrong-question {
