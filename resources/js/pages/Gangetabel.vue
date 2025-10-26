@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 text-gray-800 p-4">
     <!-- Header -->
-    <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-purple-700">🌟 Gangetabel 🌟</h1>
+    <div class="text-center mb-4 sm:mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold text-purple-700">🌟 Gangetabel 🌟</h1>
     </div>
 
     <!-- Game State Display -->
@@ -41,14 +41,14 @@
       </div>
     </div>
 
-    <div v-else class="text-center mb-6">
-      <p class="text-2xl font-bold pulse-question text-purple-700 bg-yellow-100 px-6 py-3 rounded-lg inline-block border-3 border-yellow-300 shadow-lg"
+    <div v-else class="text-center mb-4 sm:mb-6">
+      <p class="text-lg sm:text-2xl font-bold pulse-question text-purple-700 bg-yellow-100 px-3 py-2 sm:px-6 sm:py-3 rounded-lg inline-block border-3 border-yellow-300 shadow-lg"
          :class="{ 'flash-correct-question': questionFlashCorrect, 'flash-wrong-question': questionFlashWrong }">
         🤔 {{ currentQuestion.a }} × {{ currentQuestion.b }} =
-        <span v-if="currentInput" class="text-green-600 bg-green-200 px-2 py-1 rounded">{{ currentInput }}</span>
+        <span v-if="currentInput" class="text-green-600 bg-green-200 px-1 py-1 sm:px-2 rounded">{{ currentInput }}</span>
         <span v-else class="text-gray-400">?</span>
       </p>
-      <div class="mt-4 text-sm text-gray-600">
+      <div class="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-600">
         💡 Skriv dit svar og tryk Enter
       </div>
     </div>
@@ -57,31 +57,31 @@
     <div class="flex justify-center">
       <div class="relative">
         <!-- Stats bar positioned above the table -->
-        <div v-if="gameStarted && !gameCompleted" class="flex justify-between items-center mb-4 px-2" style="width: 100%;">
-          <div class="bg-green-200 text-green-700 px-3 py-1 rounded-lg border-2 border-green-300 font-semibold text-sm">
+        <div v-if="gameStarted && !gameCompleted" class="flex justify-between items-center mb-3 px-1 gap-1" style="width: 100%;">
+          <div class="bg-green-200 text-green-700 px-2 py-1 rounded border border-green-300 font-semibold text-xs">
             ✅ {{ answeredCount }}/81
           </div>
-          <div class="bg-yellow-200 text-orange-700 px-3 py-1 rounded-lg border-2 border-yellow-300 font-semibold text-sm">
-            ⏰ Tid: {{ formatTime(gameTime) }}
+          <div class="bg-yellow-200 text-orange-700 px-2 py-1 rounded border border-yellow-300 font-semibold text-xs">
+            ⏰ {{ formatTime(gameTime) }}
           </div>
-          <div class="bg-pink-200 text-pink-700 px-3 py-1 rounded-lg border-2 border-pink-300 font-semibold text-sm">
-            ❌ Fejl: {{ mistakes }}
+          <div class="bg-pink-200 text-pink-700 px-2 py-1 rounded border border-pink-300 font-semibold text-xs">
+            ❌ {{ mistakes }}
           </div>
           <button
             @click="showStats = true"
-            class="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-3 py-1 rounded-lg transition-all transform hover:scale-105 font-semibold shadow-lg text-sm"
+            class="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-2 py-1 rounded transition-all font-semibold shadow text-xs"
           >
             📊 Resultat
           </button>
         </div>
 
-        <div class="grid grid-cols-10 gap-2 bg-white p-6 rounded-xl shadow-2xl border-4 border-purple-200">
+        <div class="grid grid-cols-10 gap-0.5 sm:gap-2 bg-white p-2 sm:p-6 rounded-xl shadow-2xl border-4 border-purple-200">
         <!-- Header row -->
-        <div class="w-12 h-12"></div>
+        <div class="w-7 h-7 sm:w-12 sm:h-12"></div>
         <div
           v-for="col in 9"
           :key="`header-${col}`"
-          class="w-12 h-12 flex items-center justify-center font-bold text-purple-600 bg-purple-100 rounded-lg border-2 border-purple-200"
+          class="w-7 h-7 sm:w-12 sm:h-12 flex items-center justify-center font-bold text-purple-600 bg-purple-100 rounded border border-purple-200 text-xs sm:text-sm"
           :class="{ 'bg-yellow-300 border-yellow-400 text-orange-700': isColumnHighlighted(col) }"
         >
           {{ col }}
@@ -91,7 +91,7 @@
         <template v-for="row in 9" :key="`row-${row}`">
           <!-- Row header -->
           <div
-            class="w-12 h-12 flex items-center justify-center font-bold text-purple-600 bg-purple-100 rounded-lg border-2 border-purple-200"
+            class="w-7 h-7 sm:w-12 sm:h-12 flex items-center justify-center font-bold text-purple-600 bg-purple-100 rounded border border-purple-200 text-xs sm:text-sm"
             :class="{ 'bg-yellow-300 border-yellow-400 text-orange-700': isRowHighlighted(row) }"
           >
             {{ row }}
@@ -101,7 +101,7 @@
           <div
             v-for="col in 9"
             :key="`cell-${row}-${col}`"
-            class="w-12 h-12 flex items-center justify-center rounded-lg border-2 transition-all duration-200 font-semibold"
+            class="w-7 h-7 sm:w-12 sm:h-12 flex items-center justify-center rounded border transition-all duration-200 font-semibold text-xs sm:text-sm"
             :class="getCellClass(row, col)"
           >
             {{ getCellValue(row, col) }}
